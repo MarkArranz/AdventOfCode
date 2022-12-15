@@ -13,7 +13,7 @@ max_size = int(input("Find the top __ Elves carrying the most Calories.\nEnter a
 max_calories: List[int] = []
 cur_calories = 0
 
-with open('./input.txt', 'r') as file:
+with open('./2022/01/input.txt', 'r') as file:
     while (line := file.readline()) != '':
         if line != '\n':
             cur_calories += int(line.rstrip())

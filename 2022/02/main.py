@@ -94,7 +94,7 @@ def main() -> None:
     p1_total_score = 0
     p2_total_score = 0
 
-    with open('./input.txt', 'r') as file:
+    with open('./2022/02/input.txt', 'r') as file:
         while (line := file.readline()) != '':
             # Part 2 Code:
             p1_choice, outcome_code = line.split()
