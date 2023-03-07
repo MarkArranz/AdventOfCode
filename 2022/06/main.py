@@ -1,7 +1,7 @@
 from collections import deque
 
 
-def find_start_of_packet_marker() -> int:
+def find_start_of_packet_marker():
     with open("./input.txt") as f:
         stream = f.readline()
     unique_needed = 14
@@ -12,6 +12,8 @@ def find_start_of_packet_marker() -> int:
         marker.append(char)
         if len(marker) == unique_needed:
             return count
+    raise Exception('No valid marker found.')
+
 
 
 print(find_start_of_packet_marker())
