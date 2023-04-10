@@ -2,16 +2,31 @@ from typing import Set, Tuple
 
 
 class TreeGrid:
-    def __init__(self, rows: int, cols: int):
-        self._last_row = rows - 1
-        self._last_col = cols - 1
+    def __init__(self, filename: str) -> None:
+        with open("input.txt", "r") as f:
+            lines = f.readlines()
 
-        self._by_row = [[0 for _ in range(cols)] for _ in range(rows)]
-        self._by_col = [[0 for _ in range(rows)] for _ in range(cols)]
+        row_count = len(lines)
+        col_count = len(lines[0].strip())
+
+        self._last_row = row_count - 1
+        self._last_col = col_count - 1
+
+        self._by_row = [[0 for _ in range(col_count)]
+                        for _ in range(row_count)]
+        self._by_col = [[0 for _ in range(row_count)]
+                        for _ in range(col_count)]
 
         self._visible: Set[Tuple[int, int]] = set()
+        self._highest_scenic_score = -1
 
-    def add(self, height: int, row: int, col: int) -> None:
+        for r, line in enumerate(lines):
+            for c, height in enumerate(line.strip()):
+                self._add(int(height), r, c)
+
+        self._evaluate_grid()
+
+    def _add(self, height: int, row: int, col: int) -> None:
         self._by_row[row][col] = height
         self._by_col[col][row] = height
         # Trees in the first row, last row, first column, or last column
@@ -20,10 +35,9 @@ class TreeGrid:
             self._visible.add((row, col))
 
     def get_visible_count(self) -> int:
-        self._evaluate_visibility()
         return len(self._visible)
 
-    def _evaluate_visibility(self) -> None:
+    def _evaluate_grid(self) -> None:
         for r in range(1, self._last_row):
             for c in range(1, self._last_col):
                 if self._is_visible_in_col(r, c) or self._is_visible_in_row(r, c):
@@ -59,26 +73,44 @@ class TreeGrid:
 
         return can_see_from_left or can_see_from_right
 
-    def get_best_scenic_score(self) -> int:
-        high_score = 0
-        for r in range(len(self._by_row)):
-            for c in range(len(self._by_col)):
+    def get_highest_scenic_score(self) -> int:
+        high_scenic_score = -1
+        for r, c in self._visible:
+            # All trees on the edge have a scenic score of 0
+            if r == 0 or r == self._last_row or c == 0 or c == self._last_col:
+                continue
+            scenic_score = self._get_scenic_score(r, c)
+            high_scenic_score = max(high_scenic_score, scenic_score)
+        return high_scenic_score
+
+    def _get_scenic_score(self, r: int, c: int) -> int:
+        row = self._by_row[r]
+        col = self._by_col[c]
+        curr = row[c]
+
+        to_left = row[c-1::-1]
+        to_right = row[c+1:]
+        upward = col[r-1::-1]
+        downward = col[r+1:]
+        directions = [to_left, to_right, upward, downward]
+
+        total_score = 1
+        score = 0
+        for direction in directions:
+            for tree in direction:
+                score += 1
+                if tree >= curr:
+                    break
+            total_score *= score
+            score = 0
+
+        return total_score
 
 
 def main():
-    lines = []
-    with open("input.txt", "r") as f:
-        lines = f.readlines()
-
-    total_rows = len(lines)
-    total_col = len(lines[0].strip())
-
-    g = TreeGrid(total_rows, total_col)
-    for r, line in enumerate(lines):
-        for c, height in enumerate(line.strip()):
-            g.add(int(height), r, c)
-
+    g = TreeGrid("input.txt")
     print(f'Visible Trees: {g.get_visible_count()}')
+    print(f'Highest scenic score: {g.get_highest_scenic_score()}')
 
 
 if '__main__' == __name__:
